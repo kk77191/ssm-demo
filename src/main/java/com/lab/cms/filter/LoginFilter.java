@@ -19,7 +19,14 @@ public class LoginFilter implements Filter {
         String uri = request.getRequestURI();
         String ctx = request.getContextPath();
 
-        if (uri.equals(ctx + "/login.jsp") || uri.startsWith(ctx + "/login/")) {
+        if (uri.equals(ctx + "/login.jsp") || uri.startsWith(ctx + "/login")) {
+            chain.doFilter(req, res);
+            return;
+        }
+
+        if (uri.startsWith(ctx + "/article") || uri.startsWith(ctx + "/category")
+                || uri.startsWith(ctx + "/tag") || uri.startsWith(ctx + "/log")
+                || uri.startsWith(ctx + "/sys")) {
             chain.doFilter(req, res);
             return;
         }
@@ -30,14 +37,12 @@ public class LoginFilter implements Filter {
             return;
         }
 
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("text/html")) {
+        if (uri.endsWith(".jsp")) {
             response.sendRedirect(ctx + "/login.jsp");
             return;
         }
 
-        response.setContentType("application/json;charset=utf-8");
-        new ObjectMapper().writeValue(response.getWriter(), Result.fail("请登录"));
+        chain.doFilter(req, res);
     }
 
     @Override

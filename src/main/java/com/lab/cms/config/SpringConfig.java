@@ -1,4 +1,5 @@
 package com.lab.cms.config;
+
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
@@ -6,22 +7,26 @@ import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+
 import javax.sql.DataSource;
 
 @Configuration
-@ComponentScan(value = "com.lab.cms",excludeFilters = {@ComponentScan.Filter(org.springframework.stereotype.Controller.class)})
+@ComponentScan(value = "com.lab.cms", excludeFilters = {@ComponentScan.Filter(org.springframework.stereotype.Controller.class)})
 @PropertySource("classpath:db.properties")
 @EnableTransactionManagement
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class SpringConfig {
 
     @Bean
-    public DataSource dataSource(Environment env){
+    public DataSource dataSource(Environment env) {
         DriverManagerDataSource ds = new DriverManagerDataSource();
         ds.setDriverClassName(env.getProperty("db.driver"));
         ds.setUrl(env.getProperty("db.url"));
@@ -31,7 +36,7 @@ public class SpringConfig {
     }
 
     @Bean
-    public MybatisSqlSessionFactoryBean sqlSessionFactory(DataSource dataSource){
+    public MybatisSqlSessionFactoryBean sqlSessionFactory(DataSource dataSource) {
         MybatisSqlSessionFactoryBean fb = new MybatisSqlSessionFactoryBean();
         fb.setDataSource(dataSource);
         fb.setTypeAliasesPackage("com.lab.cms.entity");
@@ -42,14 +47,19 @@ public class SpringConfig {
     }
 
     @Bean
-    public MapperScannerConfigurer mapperScannerConfigurer(){
+    public MapperScannerConfigurer mapperScannerConfigurer() {
         MapperScannerConfigurer msc = new MapperScannerConfigurer();
         msc.setBasePackage("com.lab.cms.mapper");
         return msc;
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager(DataSource dataSource){
+    public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean
+    public LocalValidatorFactoryBean validator() {
+        return new LocalValidatorFactoryBean();
     }
 }

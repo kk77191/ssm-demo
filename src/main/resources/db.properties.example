@@ -1,0 +1,7 @@
+# 数据库配置模板
+# 使用方法：参照本文件，修改 src/main/resources/db.properties 中的 db.pwd
+# 注意：db.properties 目前由全组共用，改成本机密码后不要提交这个改动
+db.driver=com.mysql.cj.jdbc.Driver
+db.url=jdbc:mysql://localhost:3306/mvc?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+db.user=root
+db.pwd=改成你自己的密码

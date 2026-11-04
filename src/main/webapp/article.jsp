@@ -189,9 +189,9 @@ function search() {
   const kw = document.getElementById('sKeyword').value.trim();
   const catId = document.getElementById('sCatId').value;
   const status = document.getElementById('sStatus').value;
-  let url = ctx + '/article/search?pageNum=' + pageNum + '&pageSize=' + pageSize;
+  let url = ctx + '/api/articles?pageNum=' + pageNum + '&pageSize=' + pageSize;
   if (kw) url += '&keyword=' + encodeURIComponent(kw);
-  if (catId) url += '&catId=' + catId;
+  if (catId) url += '&categoryId=' + catId;
   if (status !== '') url += '&status=' + status;
 
   fetch(url, {credentials: 'same-origin'}).then(r => r.json()).then(res => {
@@ -276,9 +276,9 @@ function batchAction(type) {
 
   const ids = Array.from(ids_selected);
   let url, method = 'PUT';
-  if (type === 'publish') url = ctx + '/article/batchPublish';
-  else if (type === 'off') url = ctx + '/article/batchOffShelf';
-  else { url = ctx + '/article/batch'; method = 'DELETE'; }
+  if (type === 'publish') url = ctx + '/api/articles/batch-publish';
+  else if (type === 'off') url = ctx + '/api/articles/batch-off-shelf';
+  else { url = ctx + '/api/articles/batch'; method = 'DELETE'; }
 
   fetch(url, {
     method: method,
@@ -302,7 +302,7 @@ function openAddModal() {
 }
 
 function openEditModal(id) {
-  fetch(ctx + '/article/' + id, {credentials: 'same-origin'}).then(r => r.json()).then(res => {
+  fetch(ctx + '/api/articles/' + id, {credentials: 'same-origin'}).then(r => r.json()).then(res => {
     const a = res.data;
     document.getElementById('modalTitle').textContent = '编辑文章';
     document.getElementById('artId').value = a.id;
@@ -326,7 +326,7 @@ function save() {
   };
   if (!data.title.trim() || !data.content.trim()) { alert('标题和内容不能为空'); return; }
 
-  const url = id ? ctx + '/article/update' : ctx + '/article/add';
+  const url = id ? ctx + '/api/articles/' + id : ctx + '/api/articles';
   const params = new URLSearchParams(data);
   if (id) params.set('id', id);
 
@@ -343,7 +343,7 @@ function save() {
 
 function del(id) {
   if (!confirm('确定删除此文章?')) return;
-  fetch(ctx + '/article/' + id, {method: 'DELETE', credentials: 'same-origin'}).then(r => r.json()).then(res => {
+  fetch(ctx + '/api/articles/' + id, {method: 'DELETE', credentials: 'same-origin'}).then(r => r.json()).then(res => {
     if (res.code === 200) refresh(); else alert(res.msg);
   });
 }

@@ -3,6 +3,7 @@ package com.lab.cms.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lab.cms.annotation.Log;
 import com.lab.cms.annotation.RequireRole;
+import com.lab.cms.common.PageResult;
 import com.lab.cms.common.Result;
 import com.lab.cms.entity.CmsArticle;
 import com.lab.cms.service.CmsArticleService;
@@ -11,49 +12,71 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 文章资源接口（RESTful 风格）。
+ * <p>
+ * 统一以 /api/articles 作为资源路径，用 HTTP 动词表达操作语义：
+ * GET 查询、POST 新增、PUT 修改、DELETE 删除。
+ */
 @RestController
-@RequestMapping("/article")
+@RequestMapping("/api/articles")
 public class ArticleController {
+
     @Autowired
     private CmsArticleService articleService;
 
-    @GetMapping("/list")
-    public Result<IPage<CmsArticle>> list(@RequestParam(defaultValue = "1") Integer pageNum,
-                                          @RequestParam(defaultValue = "5") Integer pageSize,
-                                          Integer catId) {
-        return Result.ok(articleService.search(pageNum, pageSize, null, catId, null));
+    /**
+     * 分页查询文章列表，支持关键字、栏目、状态组合筛选。
+     * GET /api/articles?pageNum=1&pageSize=10&keyword=xx&categoryId=2&status=1
+     */
+    @GetMapping
+    public Result<PageResult<CmsArticle>> list(@RequestParam(defaultValue = "1") Integer pageNum,
+                                               @RequestParam(defaultValue = "10") Integer pageSize,
+                                               String keyword,
+                                               Integer categoryId,
+                                               Integer status) {
+        IPage<CmsArticle> page = articleService.search(pageNum, pageSize, keyword, categoryId, status);
+        return Result.ok(PageResult.of(page));
     }
 
-    @GetMapping("/search")
-    public Result<IPage<CmsArticle>> search(@RequestParam(defaultValue = "1") Integer pageNum,
-                                            @RequestParam(defaultValue = "5") Integer pageSize,
-                                            String keyword,
-                                            Integer catId,
-                                            Integer status) {
-        return Result.ok(articleService.search(pageNum, pageSize, keyword, catId, status));
-    }
-
+    /**
+     * 查询单篇文章详情。
+     * GET /api/articles/{id}
+     */
     @GetMapping("/{id}")
     public Result<CmsArticle> getById(@PathVariable Integer id) {
         return Result.ok(articleService.getById(id));
     }
 
+    /**
+     * 新增文章。
+     * POST /api/articles
+     */
     @RequireRole("admin")
     @Log("新增文章")
-    @PostMapping("/add")
+    @PostMapping
     public Result<Void> add(CmsArticle article) {
         articleService.save(article);
         return Result.ok();
     }
 
+    /**
+     * 修改文章，主键从路径取，避免请求体里的 id 与路径不一致。
+     * PUT /api/articles/{id}
+     */
     @RequireRole("admin")
     @Log("编辑文章")
-    @PutMapping("/update")
-    public Result<Void> update(CmsArticle article) {
+    @PutMapping("/{id}")
+    public Result<Void> update(@PathVariable Integer id, CmsArticle article) {
+        article.setId(id);
         articleService.updateById(article);
         return Result.ok();
     }
 
+    /**
+     * 删除单篇文章。
+     * DELETE /api/articles/{id}
+     */
     @RequireRole("admin")
     @Log("删除文章")
     @DeleteMapping("/{id}")
@@ -62,22 +85,34 @@ public class ArticleController {
         return Result.ok();
     }
 
+    /**
+     * 批量发布。
+     * PUT /api/articles/batch-publish
+     */
     @RequireRole("admin")
     @Log("批量发布文章")
-    @PutMapping("/batchPublish")
+    @PutMapping("/batch-publish")
     public Result<Void> batchPublish(@RequestBody List<Integer> ids) {
         articleService.batchPublish(ids);
         return Result.ok();
     }
 
+    /**
+     * 批量下架。
+     * PUT /api/articles/batch-off-shelf
+     */
     @RequireRole("admin")
     @Log("批量下架文章")
-    @PutMapping("/batchOffShelf")
+    @PutMapping("/batch-off-shelf")
     public Result<Void> batchOffShelf(@RequestBody List<Integer> ids) {
         articleService.batchOffShelf(ids);
         return Result.ok();
     }
 
+    /**
+     * 批量删除。
+     * DELETE /api/articles/batch
+     */
     @RequireRole("admin")
     @Log("批量删除文章")
     @DeleteMapping("/batch")

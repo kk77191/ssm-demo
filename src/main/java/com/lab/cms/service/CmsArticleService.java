@@ -7,8 +7,25 @@ import com.lab.cms.entity.CmsArticle;
 import java.util.List;
 
 public interface CmsArticleService extends IService<CmsArticle> {
-    IPage<CmsArticle> search(Integer pageNum, Integer pageSize, String keyword, Integer catId, Integer status);
+
+    /**
+     * 分页检索文章。
+     *
+     * @param pageNum  页码，从 1 开始
+     * @param pageSize 每页条数
+     * @param keyword  关键词（标题或正文模糊匹配）
+     * @param catId    栏目 id
+     * @param status   状态 0 草稿 / 1 已发布 / 2 已下架
+     * @param sort     排序字段，支持多字段逗号分隔，如 "status,createTime"
+     * @param order    排序方向，逗号分隔，与 sort 一一对应，如 "asc,desc"
+     * @return 分页结果
+     */
+    IPage<CmsArticle> search(Integer pageNum, Integer pageSize, String keyword, Integer catId,
+                             Integer status, String sort, String order);
+
     boolean batchUpdateStatus(List<Integer> ids, Integer status);
+
     boolean batchPublish(List<Integer> ids);
+
     boolean batchOffShelf(List<Integer> ids);
 }

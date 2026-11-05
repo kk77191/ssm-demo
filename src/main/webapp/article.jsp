@@ -48,11 +48,11 @@ body{background:#f5f7fb;min-height:100vh}
 
 <div class="search-box">
 <div class="row g-3 align-items-end">
-<div class="col-md-4">
+<div class="col-md-3">
 <label class="form-label fw-bold" style="font-size:13px;color:#555">关键词</label>
 <input type="text" id="sKeyword" class="form-control" placeholder="输入关键词搜索标题或内容">
 </div>
-<div class="col-md-3">
+<div class="col-md-2">
 <label class="form-label fw-bold" style="font-size:13px;color:#555">所属栏目</label>
 <select id="sCatId" class="form-select">
 <option value="">全部栏目</option>
@@ -68,6 +68,17 @@ body{background:#f5f7fb;min-height:100vh}
 </select>
 </div>
 <div class="col-md-3">
+<label class="form-label fw-bold" style="font-size:13px;color:#555">排序方式</label>
+<select id="sSort" class="form-select" onchange="doSearch()">
+<option value="default">默认（ID 倒序）</option>
+<option value="createTime,desc">创建时间 新→旧</option>
+<option value="createTime,asc">创建时间 旧→新</option>
+<option value="updateTime,desc">更新时间 新→旧</option>
+<option value="title,asc">标题 A→Z</option>
+<option value="status,createTime">状态优先 + 创建时间</option>
+</select>
+</div>
+<div class="col-md-2">
 <button class="btn btn-primary" onclick="doSearch()">搜索</button>
 <button class="btn btn-outline-secondary" onclick="resetSearch()">重置</button>
 </div>
@@ -185,14 +196,31 @@ function refresh() { search(); }
 
 function doSearch() { pageNum = 1; search(); }
 
+// 排序预设：下拉框的 value 是一组 "字段,方向" 的组合，多字段用逗号拼在一起
+const SORT_PRESETS = {
+  'default':           {sort: '',                    order: ''},
+  'createTime,desc':   {sort: 'createTime',           order: 'desc'},
+  'createTime,asc':    {sort: 'createTime',           order: 'asc'},
+  'updateTime,desc':   {sort: 'updateTime',           order: 'desc'},
+  'title,asc':         {sort: 'title',                order: 'asc'},
+  'status,createTime': {sort: 'status,createTime',    order: 'asc,desc'}
+};
+
+function currentSort() {
+  const v = document.getElementById('sSort').value;
+  return SORT_PRESETS[v] || SORT_PRESETS['default'];
+}
+
 function search() {
   const kw = document.getElementById('sKeyword').value.trim();
   const catId = document.getElementById('sCatId').value;
   const status = document.getElementById('sStatus').value;
+  const s = currentSort();
   let url = ctx + '/api/articles?pageNum=' + pageNum + '&pageSize=' + pageSize;
   if (kw) url += '&keyword=' + encodeURIComponent(kw);
   if (catId) url += '&categoryId=' + catId;
   if (status !== '') url += '&status=' + status;
+  if (s.sort) url += '&sort=' + encodeURIComponent(s.sort) + '&order=' + encodeURIComponent(s.order);
 
   fetch(url, {credentials: 'same-origin'}).then(r => r.json()).then(res => {
     console.log('search response:', res);
@@ -253,6 +281,7 @@ function resetSearch() {
   document.getElementById('sKeyword').value = '';
   document.getElementById('sCatId').value = '';
   document.getElementById('sStatus').value = '';
+  document.getElementById('sSort').value = 'default';
   doSearch();
 }
 

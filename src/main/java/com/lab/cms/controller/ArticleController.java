@@ -26,16 +26,22 @@ public class ArticleController {
     private CmsArticleService articleService;
 
     /**
-     * 分页查询文章列表，支持关键字、栏目、状态组合筛选。
-     * GET /api/articles?pageNum=1&pageSize=10&keyword=xx&categoryId=2&status=1
+     * 分页查询文章列表，支持关键字、栏目、状态组合筛选与多字段动态排序。
+     * <p>
+     * GET /api/articles?pageNum=1&pageSize=10&keyword=xx&categoryId=2&status=1&sort=status,createTime&order=asc,desc
+     * <p>
+     * sort 可选值（白名单）：id、title、author、status、createTime、updateTime，支持逗号分隔多字段；
+     * order 与 sort 逐位对应，取 asc / desc，缺省为 desc。
      */
     @GetMapping
     public Result<PageResult<CmsArticle>> list(@RequestParam(defaultValue = "1") Integer pageNum,
                                                @RequestParam(defaultValue = "10") Integer pageSize,
-                                               String keyword,
-                                               Integer categoryId,
-                                               Integer status) {
-        IPage<CmsArticle> page = articleService.search(pageNum, pageSize, keyword, categoryId, status);
+                                               @RequestParam(required = false) String keyword,
+                                               @RequestParam(required = false) Integer categoryId,
+                                               @RequestParam(required = false) Integer status,
+                                               @RequestParam(required = false) String sort,
+                                               @RequestParam(defaultValue = "desc") String order) {
+        IPage<CmsArticle> page = articleService.search(pageNum, pageSize, keyword, categoryId, status, sort, order);
         return Result.ok(PageResult.of(page));
     }
 

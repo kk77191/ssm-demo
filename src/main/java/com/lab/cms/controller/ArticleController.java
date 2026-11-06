@@ -8,8 +8,10 @@ import com.lab.cms.common.Result;
 import com.lab.cms.entity.CmsArticle;
 import com.lab.cms.service.CmsArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -26,22 +28,30 @@ public class ArticleController {
     private CmsArticleService articleService;
 
     /**
-     * 分页查询文章列表，支持关键字、栏目、状态组合筛选与多字段动态排序。
+     * 分页查询文章列表，支持关键词、作者、栏目、状态、时间区间组合筛选与多字段动态排序。
      * <p>
-     * GET /api/articles?pageNum=1&pageSize=10&keyword=xx&categoryId=2&status=1&sort=status,createTime&order=asc,desc
+     * GET /api/articles?pageNum=1&pageSize=10&keyword=xx&author=admin&categoryId=2&status=1
+     * &amp;beginDate=2024-05-01&amp;endDate=2024-05-31&amp;sort=status,createTime&amp;order=asc,desc
      * <p>
      * sort 可选值（白名单）：id、title、author、status、createTime、updateTime，支持逗号分隔多字段；
-     * order 与 sort 逐位对应，取 asc / desc，缺省为 desc。
+     * order 与 sort 逐位对应，取 asc / desc，缺省为 desc；
+     * beginDate / endDate 只填日期，服务端按「起始日 00:00:00 ~ 截止日 23:59:59」转化为时间区间。
      */
     @GetMapping
-    public Result<PageResult<CmsArticle>> list(@RequestParam(defaultValue = "1") Integer pageNum,
-                                               @RequestParam(defaultValue = "10") Integer pageSize,
-                                               @RequestParam(required = false) String keyword,
-                                               @RequestParam(required = false) Integer categoryId,
-                                               @RequestParam(required = false) Integer status,
-                                               @RequestParam(required = false) String sort,
-                                               @RequestParam(defaultValue = "desc") String order) {
-        IPage<CmsArticle> page = articleService.search(pageNum, pageSize, keyword, categoryId, status, sort, order);
+    public Result<PageResult<CmsArticle>> list(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String author,
+            // 前端 date 控件提交的是 yyyy-MM-dd，用 @DateTimeFormat 指定格式后可直接绑定为 LocalDate
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate beginDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "desc") String order) {
+        IPage<CmsArticle> page = articleService.search(pageNum, pageSize, keyword, categoryId, status,
+                author, beginDate, endDate, sort, order);
         return Result.ok(PageResult.of(page));
     }
 

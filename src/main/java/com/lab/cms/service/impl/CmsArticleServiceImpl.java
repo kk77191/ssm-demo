@@ -6,11 +6,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lab.cms.common.BusinessException;
 import com.lab.cms.entity.CmsArticle;
 import com.lab.cms.mapper.CmsArticleMapper;
 import com.lab.cms.service.CmsArticleService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,7 +47,13 @@ public class CmsArticleServiceImpl extends ServiceImpl<CmsArticleMapper, CmsArti
 
     @Override
     public IPage<CmsArticle> search(Integer pageNum, Integer pageSize, String keyword, Integer catId,
-                                    Integer status, String sort, String order) {
+                                    Integer status, String author, LocalDate beginDate, LocalDate endDate,
+                                    String sort, String order) {
+        // 参数自检：起始日期晚于截止日期属于用户输入错误，直接抛业务异常由全局异常处理器转成提示
+        if (beginDate != null && endDate != null && beginDate.isAfter(endDate)) {
+            throw new BusinessException("开始日期不能晚于结束日期");
+        }
+
         LambdaQueryWrapper<CmsArticle> wrapper = new LambdaQueryWrapper<>();
         if (keyword != null && !keyword.trim().isEmpty()) {
             wrapper.and(w -> w.like(CmsArticle::getTitle, keyword.trim())
@@ -56,6 +64,17 @@ public class CmsArticleServiceImpl extends ServiceImpl<CmsArticleMapper, CmsArti
         }
         if (status != null) {
             wrapper.eq(CmsArticle::getStatus, status);
+        }
+        if (author != null && !author.trim().isEmpty()) {
+            wrapper.like(CmsArticle::getAuthor, author.trim());
+        }
+        if (beginDate != null) {
+            wrapper.ge(CmsArticle::getCreateTime, beginDate.atStartOfDay());
+        }
+        if (endDate != null) {
+            // 用 "小于次日 0 点" 代替 "小于等于当天 23:59:59"：
+            // 既能完整包含截止日一整天，也避免了时间字段精度带来的边界丢数据，且可以走索引
+            wrapper.lt(CmsArticle::getCreateTime, endDate.plusDays(1).atStartOfDay());
         }
         applySort(wrapper, sort, order);
         return baseMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);

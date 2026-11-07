@@ -36,7 +36,8 @@ CREATE TABLE cms_category (
     cat_desc VARCHAR(100) COMMENT '栏目描述',
     parent_id INT DEFAULT 0 COMMENT '父栏目id, 0为顶级',
     sort INT DEFAULT 0 COMMENT '排序, 数值越小越靠前',
-    status TINYINT DEFAULT 1 COMMENT '状态: 1启用 0禁用'
+    status TINYINT DEFAULT 1 COMMENT '状态: 1启用 0禁用',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除: 0正常 1已删除'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO cms_category(cat_name,cat_desc,parent_id,sort,status) VALUES
@@ -52,7 +53,8 @@ INSERT INTO cms_category(cat_name,cat_desc,parent_id,sort,status) VALUES
 DROP TABLE IF EXISTS cms_tag;
 CREATE TABLE cms_tag (
     id INT PRIMARY KEY AUTO_INCREMENT COMMENT '标签id',
-    tag_name VARCHAR(30) NOT NULL COMMENT '标签名'
+    tag_name VARCHAR(30) NOT NULL COMMENT '标签名',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除: 0正常 1已删除'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO cms_tag(tag_name) VALUES
@@ -71,6 +73,8 @@ CREATE TABLE cms_article (
     status TINYINT DEFAULT 0 COMMENT '状态: 0草稿 1已发布 2已下架',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除: 0正常 1已删除',
+    KEY idx_article_deleted (deleted),
     FOREIGN KEY (cat_id) REFERENCES cms_category(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

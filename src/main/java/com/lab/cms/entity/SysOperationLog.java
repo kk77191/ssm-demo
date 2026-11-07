@@ -1,6 +1,8 @@
 package com.lab.cms.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -18,5 +20,8 @@ public class SysOperationLog {
     private String method;
     private String params;
     private String ip;
+
+    /** 日志时间由 MetaObjectHandler 统一填充 */
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 }

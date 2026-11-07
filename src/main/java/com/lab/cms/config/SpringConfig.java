@@ -1,5 +1,7 @@
 package com.lab.cms.config;
 
+import com.baomidou.mybatisplus.core.config.GlobalConfig;
+import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
@@ -36,13 +38,21 @@ public class SpringConfig {
     }
 
     @Bean
-    public MybatisSqlSessionFactoryBean sqlSessionFactory(DataSource dataSource) {
+    public MybatisSqlSessionFactoryBean sqlSessionFactory(DataSource dataSource, MetaObjectHandler metaObjectHandler) {
         MybatisSqlSessionFactoryBean fb = new MybatisSqlSessionFactoryBean();
         fb.setDataSource(dataSource);
         fb.setTypeAliasesPackage("com.lab.cms.entity");
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
         fb.setPlugins(interceptor);
+
+        // 注册公共字段自动填充处理器。
+        // 注意：这里是手写 Spring 配置而非 Spring Boot 自动装配，
+        // MyBatis-Plus 不会自动从容器里找 MetaObjectHandler，必须显式放进 GlobalConfig，
+        // 否则 @TableField(fill = ...) 不会生效（字段为 null 时被数据库默认值兜住，容易误以为成功了）。
+        GlobalConfig globalConfig = new GlobalConfig();
+        globalConfig.setMetaObjectHandler(metaObjectHandler);
+        fb.setGlobalConfig(globalConfig);
         return fb;
     }
 

@@ -116,7 +116,8 @@ body{background:#f5f7fb;min-height:100vh}
 <th style="width:40px"><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
 <th style="width:70px">ID</th>
 <th>标题</th>
-<th style="width:100px">栏目</th>
+<th style="width:110px">栏目</th>
+<th style="width:170px">标签</th>
 <th style="width:90px">状态</th>
 <th style="width:80px">作者</th>
 <th style="width:150px">创建时间</th>
@@ -259,8 +260,9 @@ function search() {
       tr.innerHTML =
         '<td><input type="checkbox" class="row-check" value="' + a.id + '" onchange="toggleOne(' + a.id + ',this)"></td>' +
         '<td><span class="badge-count">' + a.id + '</span></td>' +
-        '<td><strong>' + a.title + '</strong></td>' +
-        '<td><span class="cat-badge">栏目 ' + a.catId + '</span></td>' +
+        '<td><strong>' + esc(a.title) + '</strong></td>' +
+        '<td>' + catHtml(a) + '</td>' +
+        '<td>' + tagsHtml(a.tags) + '</td>' +
         '<td>' + statusHtml(a.status) + '</td>' +
         '<td>' + (a.author || '') + '</td>' +
         '<td class="text-muted" style="font-size:13px">' + (a.createTime || '') + '</td>' +
@@ -283,6 +285,26 @@ function statusHtml(s) {
   if (s === 1) return '<span class="status-pub">已发布</span>';
   if (s === 2) return '<span class="status-off">已下架</span>';
   return '<span class="status-draft">草稿</span>';
+}
+
+// 列表内容来自数据库，拼接进 HTML 前统一转义，避免标题里的 < 或引号破坏页面结构
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function catHtml(a) {
+  if (a.catName) return '<span class="cat-badge">' + esc(a.catName) + '</span>';
+  if (a.catId) return '<span class="cat-badge">栏目 ' + a.catId + '</span>';
+  return '<span class="text-muted" style="font-size:12px">未分类</span>';
+}
+
+function tagsHtml(tags) {
+  if (!tags || !tags.length) return '<span class="text-muted" style="font-size:12px">—</span>';
+  return tags.map(t =>
+    '<span style="display:inline-block;padding:1px 8px;margin:1px 4px 1px 0;border-radius:10px;' +
+    'background:#eef2ff;color:#4f46e5;font-size:12px">' + esc(t) + '</span>').join('');
 }
 
 function renderPageBtns() {

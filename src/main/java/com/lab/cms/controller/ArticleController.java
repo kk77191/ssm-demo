@@ -7,6 +7,7 @@ import com.lab.cms.common.PageResult;
 import com.lab.cms.common.Result;
 import com.lab.cms.entity.CmsArticle;
 import com.lab.cms.service.CmsArticleService;
+import com.lab.cms.vo.ArticleVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,7 @@ public class ArticleController {
      * beginDate / endDate 只填日期，服务端按「起始日 00:00:00 ~ 截止日 23:59:59」转化为时间区间。
      */
     @GetMapping
-    public Result<PageResult<CmsArticle>> list(
+    public Result<PageResult<ArticleVO>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String keyword,
@@ -50,7 +51,7 @@ public class ArticleController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "desc") String order) {
-        IPage<CmsArticle> page = articleService.search(pageNum, pageSize, keyword, categoryId, status,
+        IPage<ArticleVO> page = articleService.search(pageNum, pageSize, keyword, categoryId, status,
                 author, beginDate, endDate, sort, order);
         return Result.ok(PageResult.of(page));
     }

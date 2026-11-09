@@ -3,6 +3,7 @@ package com.lab.cms.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.lab.cms.entity.CmsArticle;
+import com.lab.cms.vo.ArticleVO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,9 +25,9 @@ public interface CmsArticleService extends IService<CmsArticle> {
      * @param order     排序方向，逗号分隔，与 sort 一一对应，如 "asc,desc"
      * @return 分页结果
      */
-    IPage<CmsArticle> search(Integer pageNum, Integer pageSize, String keyword, Integer catId,
-                             Integer status, String author, LocalDate beginDate, LocalDate endDate,
-                             String sort, String order);
+    IPage<ArticleVO> search(Integer pageNum, Integer pageSize, String keyword, Integer catId,
+                            Integer status, String author, LocalDate beginDate, LocalDate endDate,
+                            String sort, String order);
 
     boolean batchUpdateStatus(List<Integer> ids, Integer status);
 

@@ -4,6 +4,7 @@ import com.lab.cms.filter.CorsFilter;
 import com.lab.cms.filter.LoginFilter;
 import com.lab.cms.filter.XssFilter;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.filter.FormContentFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 import javax.servlet.Filter;
@@ -32,7 +33,12 @@ public class ServletInitConfig extends AbstractAnnotationConfigDispatcherServlet
         CharacterEncodingFilter encoding = new CharacterEncodingFilter();
         encoding.setEncoding("UTF-8");
         encoding.setForceEncoding(true);
-        return new Filter[]{encoding};
+
+        // FormContentFilter：Servlet 规范只对 POST 解析 application/x-www-form-urlencoded 请求体，
+        // PUT / PATCH / DELETE 的请求体不会进入 parameter map，导致 @ModelAttribute 绑定出全 null 对象。
+        // 这个过滤器会把 PUT/PATCH/DELETE 的表单体读出来塞进 parameter，前端用表单方式提交 PUT 才能被 Controller 接收。
+        // 顺序：先编码、再解析表单体，两者不能颠倒。
+        return new Filter[]{encoding, new FormContentFilter()};
     }
 
     @Override
